@@ -404,7 +404,8 @@ export function App() {
         artist: 'VNCOC Songs',
         album: 'Thánh Ca & Hymns',
         artwork: [
-          { src: 'https://cdn-icons-png.flaticon.com/512/9043/9043013.png', sizes: '512x512', type: 'image/png' }
+          { src: window.location.origin + '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: window.location.origin + '/pwa-512x512.png', sizes: '512x512', type: 'image/png' }
         ]
       });
 
