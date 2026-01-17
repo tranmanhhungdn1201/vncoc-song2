@@ -1,4 +1,3 @@
-import React from 'react';
 import { Music2, Heart, Sun, Moon } from 'lucide-react';
 
 interface HeaderProps {
