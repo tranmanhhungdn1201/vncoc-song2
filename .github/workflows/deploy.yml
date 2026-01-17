@@ -30,6 +30,9 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Build
+        env:
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
         run: yarn build
 
       - name: Upload artifact
