@@ -116,6 +116,30 @@ export function App() {
     }
   }, []);
 
+  // Handle Song Deep Link
+  useEffect(() => {
+    // We wait for songs to be loaded before checking the URL
+    if (songs.length > 0 && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const songIdParam = params.get('songId');
+
+      if (songIdParam) {
+        const foundSong = songs.find(s => s.id === songIdParam);
+        if (foundSong) {
+          setSelectedSong(foundSong);
+          setShowKaraoke(true);
+          // Optional: Auto-play if desired by user, or let them press play
+          if (foundSong.vocalUrl || foundSong.beatUrl) {
+             setIsPlaying(true);
+          }
+          
+          // Clean URL
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      }
+    }
+  }, [songs]);
+
   useEffect(() => {
     if (!showKaraoke && savedScrollPosition > 0) {
       // Restore scroll position when returning from Karaoke mode
@@ -153,15 +177,16 @@ export function App() {
     }
   }, [favorites]);
 
-  useEffect(() => {
-    const loadSongs = async () => {
-      setIsLoading(true);
-      const fetchedSongs = await fetchSongs();
-      setSongs(fetchedSongs);
-      setIsLoading(false);
-    };
-    loadSongs();
+  const loadSongs = React.useCallback(async () => {
+    setIsLoading(true);
+    const fetchedSongs = await fetchSongs();
+    setSongs(fetchedSongs);
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadSongs();
+  }, [loadSongs]);
 
   // Audio handling
   useEffect(() => {
@@ -346,25 +371,55 @@ export function App() {
     if (!selectedSong) return;
     const text = `Check out this song: ${selectedSong.titleVn} - ${selectedSong.titleEn}`;
     
+    // Construct URL with song Id
+    const url = new URL(window.location.href);
+    url.searchParams.set('songId', selectedSong.id);
+    const shareUrl = url.toString();
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'VNCOC Songs',
           text: text,
-          url: window.location.href, 
+          url: shareUrl, 
         });
       } catch (err) {
         console.log('Error sharing:', err);
       }
     } else {
       try {
-        await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
+        await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
         alert('Link copied to clipboard!');
       } catch (err) {
         console.error('Failed to copy:', err);
       }
     }
   };
+
+  // Media Session API Handling
+  useEffect(() => {
+    if ('mediaSession' in navigator && selectedSong) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: language === 'vn' ? selectedSong.titleVn : selectedSong.titleEn,
+        artist: 'VNCOC Songs',
+        album: 'Thánh Ca & Hymns',
+        artwork: [
+          { src: 'https://cdn-icons-png.flaticon.com/512/9043/9043013.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        setIsPlaying(true);
+        audioRef.current?.play();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        setIsPlaying(false);
+        audioRef.current?.pause();
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', handlePrevSong);
+      navigator.mediaSession.setActionHandler('nexttrack', handleNextSong);
+    }
+  }, [selectedSong, language, isPlaying]); // Re-register when song changes to update metadata
 
   // Ensure volume is set when audio loads
   useEffect(() => {
@@ -435,6 +490,7 @@ export function App() {
                   }
                 }}
                 currentSongId={selectedSong?.id}
+                onRefresh={loadSongs}
               />
             )}
             {selectedSong && (

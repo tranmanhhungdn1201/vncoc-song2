@@ -1,6 +1,6 @@
-import { Heart, Music2, Play, ChevronUp } from 'lucide-react';
+import { Heart, Music2, Play, ChevronUp, Loader2 } from 'lucide-react';
 import { Song } from '../types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface SongListProps {
   songs: Song[];
@@ -12,6 +12,7 @@ interface SongListProps {
   onToggleFavorite: (songId: string) => void;
   onSongSelect: (song: Song) => void;
   currentSongId?: string;
+  onRefresh?: () => Promise<void>;
 }
 
 export function SongList({
@@ -23,7 +24,8 @@ export function SongList({
   favorites,
   onToggleFavorite,
   onSongSelect,
-  currentSongId
+  currentSongId,
+  onRefresh
 }: SongListProps) {
   const filteredSongs = songs.filter(song => {
     if (showFavoritesOnly && !favorites.has(song.id)) return false;
@@ -42,6 +44,10 @@ export function SongList({
   });
 
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [pullStart, setPullStart] = useState(0);
+  const [pullChange, setPullChange] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,8 +75,65 @@ export function SongList({
     }
   };
 
+  // Pull to Refresh Handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY === 0 && !isRefreshing && onRefresh) {
+      setPullStart(e.targetTouches[0].clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (pullStart > 0 && window.scrollY === 0 && !isRefreshing && onRefresh) {
+      const touchY = e.targetTouches[0].clientY;
+      const diff = touchY - pullStart;
+      if (diff > 0) {
+        // e.preventDefault(); // Can't prevent default in passive listener easily in React, relying on CSS/Scroll behavior
+        setPullChange(Math.min(diff * 0.5, 100)); // Resistance
+      }
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (pullChange > 60 && onRefresh) {
+      setIsRefreshing(true);
+      setPullChange(60); // Snap to loading position
+      try {
+        await onRefresh();
+      } finally {
+        setTimeout(() => {
+           setIsRefreshing(false);
+           setPullChange(0);
+           setPullStart(0);
+        }, 500);
+      }
+    } else {
+      setPullChange(0);
+      setPullStart(0);
+    }
+  };
+
   return (
-    <div className="space-y-2 pb-20">
+    <div 
+      className="space-y-2 pb-20 relative touch-pan-y"
+      ref={listRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull to Refresh Indicator */}
+      <div 
+        className="flex items-center justify-center overflow-hidden transition-all duration-300 ease-out"
+        style={{ 
+          height: isRefreshing ? 60 : pullChange, 
+          opacity: Math.min(pullChange / 40, 1) 
+        }}
+      >
+        <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-sm font-medium">
+            <Loader2 className={`w-5 h-5 ${isRefreshing || pullChange > 60 ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullChange * 3}deg)` }} />
+            {isRefreshing ? 'Refreshing...' : 'Pull to refresh'}
+        </div>
+      </div>
+
       {filteredSongs.length === 0 ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -111,7 +174,7 @@ export function SongList({
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className={`font-semibold truncate text-base ${isPlaying ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-white transition-colors'}`}>
+                  <h3 className={`font-semibold truncate text-sm sm:text-base ${isPlaying ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-white transition-colors'}`}>
                     {language === 'vn' ? song.titleVn : song.titleEn}
                   </h3>
                   {song.hasAudio && (

@@ -145,7 +145,7 @@ export function PlayerBar({
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3">
             {/* Volume Control (Desktop) */}
              <div 
               className="relative hidden md:flex items-center"
@@ -186,19 +186,25 @@ export function PlayerBar({
 
             <button 
               onClick={onToggleFavorite}
-              className={`p-2 rounded-full transition-all duration-300 hover:bg-zinc-100 dark:hover:bg-white/10 ${isFavorite ? 'text-red-500' : 'text-zinc-400 dark:text-zinc-400'}`}
+              className={`p-1.5 md:p-2 rounded-full transition-all duration-300 hover:bg-zinc-100 dark:hover:bg-white/10 ${isFavorite ? 'text-red-500' : 'text-zinc-400 dark:text-zinc-400'}`}
             >
               <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
             
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-1.5 md:gap-4">
               {/* Audio Mode Toggle - Only show if both are available or if we want to show generic toggle */}
               {(song.beatUrl && song.vocalUrl) && (
                  <button 
                   onClick={onToggleAudioMode}
-                  className="px-3 py-1 text-xs font-bold rounded-full bg-white/10 text-zinc-400 hover:bg-white/20 hover:text-white transition-all uppercase"
+                  className={`px-2 py-1 md:px-3 md:py-1 text-[10px] md:text-xs font-bold rounded-full transition-all uppercase flex-shrink-0
+                    ${audioMode === 'beat' 
+                      ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300' 
+                      : 'bg-zinc-100 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/20'
+                    }
+                  `}
                 >
-                  {audioMode}
+                  <span className="md:hidden">{audioMode === 'vocal' ? 'VOC' : 'BEAT'}</span>
+                  <span className="hidden md:inline">{audioMode}</span>
                 </button>
               )}
 
@@ -211,12 +217,12 @@ export function PlayerBar({
               
               <button 
                 onClick={onPlayPause}
-                className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 rounded-full text-white shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300 active:scale-95"
+                className="p-2 md:p-3 bg-gradient-to-br from-blue-500 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 rounded-full text-white shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300 active:scale-95 flex-shrink-0"
               >
                 {isPlaying ? (
-                  <Pause className="w-6 h-6 fill-current" />
+                  <Pause className="w-5 h-5 md:w-6 md:h-6 fill-current" />
                 ) : (
-                  <Play className="w-6 h-6 fill-current pl-1" />
+                  <Play className="w-5 h-5 md:w-6 md:h-6 fill-current pl-0.5" />
                 )}
               </button>
               
@@ -230,7 +236,7 @@ export function PlayerBar({
 
             <button 
               onClick={onKaraokeMode}
-              className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full transition-all"
+              className="p-1.5 md:p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full transition-all flex-shrink-0"
             >
               <Maximize2 className="w-5 h-5" />
             </button>

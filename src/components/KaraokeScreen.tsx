@@ -165,7 +165,7 @@ export function KaraokeScreen({
           <ChevronLeft className="w-6 h-6" />
         </button>
         <div className="text-center flex-1 mx-4">
-          <h2 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
+          <h2 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white tracking-tight leading-tight">
             <span className="text-blue-600 dark:text-blue-400 mr-2">#{song.index}</span>
             {language === 'vn' ? song.titleVn : song.titleEn}
           </h2>
@@ -252,17 +252,17 @@ export function KaraokeScreen({
         </div>
 
         {/* Mobile View Header */}
-        <div className="flex md:hidden items-center justify-between">
-            <div className="flex bg-zinc-100 dark:bg-white/5 p-1 rounded-lg">
+        <div className="flex md:hidden items-center justify-between gap-4">
+            <div className="flex items-center bg-white/50 dark:bg-black/20 p-1 rounded-xl border border-zinc-200/50 dark:border-white/5 backdrop-blur-sm shadow-sm ring-1 ring-zinc-900/5 dark:ring-white/10">
             {['vn', 'en', 'both'].map((mode) => (
               <button 
                 key={mode}
                 onClick={() => setDisplayMode(mode as any)} 
                 className={`
-                  px-3 py-1 rounded-md text-xs font-bold transition-all uppercase
+                  relative px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-300 uppercase tracking-wider
                   ${displayMode === mode 
-                    ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-white shadow-sm' 
-                    : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
+                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 ring-1 ring-black/5 scale-100' 
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/50 dark:hover:bg-white/5'
                   }
                 `}
               >
@@ -273,13 +273,13 @@ export function KaraokeScreen({
 
           <button 
             onClick={() => setShowSettings(!showSettings)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all duration-300 border backdrop-blur-sm
               ${showSettings 
-                ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' 
-                : 'bg-zinc-100 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 border border-transparent'
+                ? 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20' 
+                : 'bg-white/50 dark:bg-black/20 border-zinc-200/50 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-white/80 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white shadow-sm'
               }`}
           >
-            <Settings className="w-4 h-4" />
+            <Settings className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${showSettings ? 'animate-spin-slow' : ''}`} />
             {language === 'vn' ? 'CÀI ĐẶT' : 'SETTINGS'}
           </button>
         </div>
@@ -393,7 +393,7 @@ export function KaraokeScreen({
                 <SkipForward className="w-6 h-6" />
               </button>
 
-              <div className="relative group flex items-center">
+              <div className="relative group hidden md:flex items-center">
                  <button 
                     onClick={() => onVolumeChange(volume === 0 ? 1 : 0)}
                     className="p-2 rounded-full transition-colors text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/10"
